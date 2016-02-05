@@ -35,7 +35,7 @@ namespace FireSharp.Test.Console
         {
             await _client.DeleteAsync("chat");
 
-            await _client.OnAsync("chat",
+            await _client.OnAsync("chat", string.Empty,
                 added: async (sender, args) =>
                 {
                     System.Console.WriteLine(args.Data + "-> 1\n");
@@ -48,7 +48,7 @@ namespace FireSharp.Test.Console
                 changed: (sender, args) => { System.Console.WriteLine(args.Data); },
                 removed: (sender, args) => { System.Console.WriteLine(args.Path); });
 
-            await _client.OnAsync("chat",
+            await _client.OnAsync("chat",string.Empty,
                  added: (sender, args) => { System.Console.WriteLine(args.Data + " -> 2\n"); },
                  changed: (sender, args) => { System.Console.WriteLine(args.Data); },
                  removed: (sender, args) => { System.Console.WriteLine(args.Path); });

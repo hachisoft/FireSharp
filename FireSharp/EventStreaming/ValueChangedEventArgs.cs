@@ -4,7 +4,7 @@ namespace FireSharp.EventStreaming
 {
     public class ValueChangedEventArgs : EventArgs
     {
-        public ValueChangedEventArgs(string path, string data, string oldData)
+        public ValueChangedEventArgs(string path, object data, object oldData)
         {
             Path = path;
             Data = data;
@@ -12,7 +12,7 @@ namespace FireSharp.EventStreaming
         }
 
         public string Path { get; private set; }
-        public string Data { get; private set; }
-        public string OldData { get; private set; }
+        public object Data { get; private set; }
+        public object OldData { get; private set; }
     }
 }

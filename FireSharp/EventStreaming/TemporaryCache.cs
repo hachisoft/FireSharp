@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace FireSharp.EventStreaming
 {
@@ -13,8 +14,11 @@ namespace FireSharp.EventStreaming
         private readonly SimpleCacheItem _tree = new SimpleCacheItem();
         private readonly object _treeLock = new object();
 
-        public TemporaryCache()
+        private bool _objectChanged;
+
+        public TemporaryCache(bool objectChanged)
         {
+            _objectChanged = objectChanged;
             _tree.Name = string.Empty;
             _tree.Created = false;
             _tree.Parent = null;
@@ -42,6 +46,23 @@ namespace FireSharp.EventStreaming
                 var root = FindRoot(path);
                 UpdateChildren(root, data);
             }
+        }
+
+        public void Replace(string path,JObject o)
+        {
+            if (o != null)
+            {
+                OnAdded(new ValueAddedEventArgs(path, o));
+            }
+            else
+            {
+                OnRemoved(new ValueRemovedEventArgs(path));
+            }
+        }
+
+        public void Update(string path, JObject o)
+        {
+            OnUpdated(new ValueChangedEventArgs(path,o,o));
         }
 
         private SimpleCacheItem FindRoot(string path)
@@ -111,6 +132,7 @@ namespace FireSharp.EventStreaming
                     case JsonToken.Null:
                         DeleteChild(root);
                         return;
+                    case JsonToken.EndObject: return;
                 }
             }
         }

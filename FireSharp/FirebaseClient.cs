@@ -329,7 +329,7 @@ namespace FireSharp
             ValueChangedEventHandler changed = null,
             ValueRemovedEventHandler removed = null)
         {
-            return new EventStreamResponse(await _requestManager.ListenAsync(path).ConfigureAwait(false), added, changed, removed);
+            return new EventStreamResponse(await _requestManager.ListenAsync(path).ConfigureAwait(false), false, added, changed, removed);
         }
 
         public async Task<EventRootResponse<T>> OnChangeGetAsync<T>(string path, ValueRootAddedEventHandler<T> added = null)
@@ -337,10 +337,10 @@ namespace FireSharp
             return new EventRootResponse<T>(await _requestManager.ListenAsync(path).ConfigureAwait(false), added, _requestManager, path);
         }
 
-        public async Task<EventStreamResponse> OnAsync(string path, ValueAddedEventHandler added = null, ValueChangedEventHandler changed = null,
+        public async Task<EventStreamResponse> OnAsync(string path, string query, bool objectChanged=false, ValueAddedEventHandler added = null, ValueChangedEventHandler changed = null,
             ValueRemovedEventHandler removed = null)
         {
-            return new EventStreamResponse(await _requestManager.ListenAsync(path).ConfigureAwait(false), added, changed, removed);
+            return new EventStreamResponse(await _requestManager.ListenAsync(path, query).ConfigureAwait(false), objectChanged, added, changed, removed);
         }
 
         private void HandleIfErrorResponse(HttpStatusCode statusCode, string content, Action<HttpStatusCode, string> errorHandler = null)

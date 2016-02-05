@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FireSharp.EventStreaming;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace FireSharp.Response
 {
@@ -14,15 +15,17 @@ namespace FireSharp.Response
         private readonly TemporaryCache _cache;
         private readonly CancellationTokenSource _cancel;
         private readonly Task _pollingTask;
-
+        private bool _objectChanged;
         internal EventStreamResponse(HttpResponseMessage httpResponse,
+            bool objectChanged=false,
             ValueAddedEventHandler added = null,
             ValueChangedEventHandler changed = null,
             ValueRemovedEventHandler removed = null)
         {
+            _objectChanged = objectChanged;
             _cancel = new CancellationTokenSource();
 
-            _cache = new TemporaryCache();
+            _cache = new TemporaryCache(objectChanged);
 
             if (added != null)
             {
@@ -65,6 +68,9 @@ namespace FireSharp.Response
 
                                 if (read.StartsWith("data: "))
                                 {
+                                    if (eventName == "keep-alive")
+                                        continue;
+
                                     if (string.IsNullOrEmpty(eventName))
                                     {
                                         throw new InvalidOperationException("Payload data was received but an event did not preceed it.");
@@ -89,26 +95,48 @@ namespace FireSharp.Response
             _cancel.Cancel();
         }
 
-        private void Update(string eventName, string p)
+        private async Task Update(string eventName, string p)
         {
             switch (eventName)
             {
                 case "put":
                 case "patch":
                     using (var r = new StringReader(p))
-                    using (JsonReader reader = new JsonTextReader(r))
                     {
-                        ReadToNamedPropertyValue(reader, "path");
-                        reader.Read();
-                        var path = reader.Value.ToString();
-
-                        if (eventName == "put")
+                        if (_objectChanged)
                         {
-                            _cache.Replace(path, ReadToNamedPropertyValue(reader, "data"));
+                            string s = await r.ReadToEndAsync();
+                            JObject j=JObject.Parse(s);
+                            if (j != null)
+                            {
+                                string path = j.GetValue("path").ToString();
+                                if (eventName == "put")
+                                {
+                                    _cache.Replace(path, j.GetValue("data") as JObject);
+                                }
+                                else
+                                {
+                                    _cache.Update(path, j.GetValue("data") as JObject);
+                                }
+                            }
                         }
                         else
                         {
-                            _cache.Update(path, ReadToNamedPropertyValue(reader, "data"));
+                            using (JsonReader reader = new JsonTextReader(r))
+                            {
+                                ReadToNamedPropertyValue(reader, "path");
+                                reader.Read();
+                                var path = reader.Value.ToString();
+
+                                if (eventName == "put")
+                                {
+                                    _cache.Replace(path, ReadToNamedPropertyValue(reader, "data"));
+                                }
+                                else
+                                {
+                                    _cache.Update(path, ReadToNamedPropertyValue(reader, "data"));
+                                }
+                            }
                         }
                     }
                     break;
