@@ -60,25 +60,27 @@ namespace FireSharp.Response
                                 _cancel.Token.ThrowIfCancellationRequested();
                                 var read = await sr.ReadLineAsync();
                                 Debug.WriteLine(read);
-                                if (read.StartsWith("event: "))
+                                if (read != null)
                                 {
-                                    eventName = read.Substring(7);
-                                    continue;
-                                }
-
-                                if (read.StartsWith("data: "))
-                                {
-                                    if (eventName == "keep-alive")
-                                        continue;
-
-                                    if (string.IsNullOrEmpty(eventName))
+                                    if (read.StartsWith("event: "))
                                     {
-                                        throw new InvalidOperationException("Payload data was received but an event did not preceed it.");
+                                        eventName = read.Substring(7);
+                                        continue;
                                     }
 
-                                    Update(eventName, read.Substring(6));
-                                }
+                                    if (read.StartsWith("data: "))
+                                    {
+                                        if (eventName == "keep-alive")
+                                            continue;
 
+                                        if (string.IsNullOrEmpty(eventName))
+                                        {
+                                            throw new InvalidOperationException("Payload data was received but an event did not preceed it.");
+                                        }
+
+                                        Update(eventName, read.Substring(6));
+                                    }
+                                }
                                 // start over
                                 eventName = null;
                             }
