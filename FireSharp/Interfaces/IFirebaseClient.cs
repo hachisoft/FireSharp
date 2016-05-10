@@ -24,7 +24,7 @@ namespace FireSharp.Interfaces
         FirebaseResponse CreateUser(string email, string password);
         FirebaseResponse ChangeEmail(string oldEmail, string password, string newEmail);
         FirebaseResponse RemoveUser(string email, string password);
-        FirebaseResponse ResetPassword(string email, string password);
+        FirebaseResponse ResetPassword(string email);
         FirebaseResponse ChangePassword(string email, string oldPassword, string newPassword);
 
         [Obsolete("This method is obsolete use OnAsync instead.")]

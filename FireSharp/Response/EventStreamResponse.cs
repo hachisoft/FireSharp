@@ -78,7 +78,7 @@ namespace FireSharp.Response
                                             throw new InvalidOperationException("Payload data was received but an event did not preceed it.");
                                         }
 
-                                        Update(eventName, read.Substring(6));
+                                        await Update(eventName, read.Substring(6));
                                     }
                                 }
                                 // start over

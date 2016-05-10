@@ -190,7 +190,7 @@ namespace FireSharp
             }
         }
 
-        public FirebaseResponse ResetPassword(string email, string password)
+        public FirebaseResponse ResetPassword(string email)
         {
             /*
             /v2/luminous-heat-7934/users/tedwards@hachisoft.com/password?&email=tedwards%40hachisoft.com&_method=POST&v=node-2.3.2&transport=json&suppress_status_codes=true
